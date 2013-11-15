@@ -1,0 +1,36 @@
+{
+  "name": "koa-trie-router",
+  "description": "Trie-routing for Koa",
+  "version": "0.0.1",
+  "author": {
+    "name": "Jonathan Ong",
+    "email": "me@jongleberry.com",
+    "url": "http://jongleberry.com",
+    "twitter": "https://twitter.com/jongleberry"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/koajs/trie-router.git"
+  },
+  "bugs": {
+    "mail": "me@jongleberry.com",
+    "url": "https://github.com/koajs/trie-router/issues"
+  },
+  "dependencies": {
+    "routington": "*",
+    "koa-compose": "koajs/compose"
+  },
+  "devDependencies": {
+    "koa": "koajs/koa",
+    "mocha": "*",
+    "should": "*",
+    "supertest": "*"
+  },
+  "scripts": {
+    "test": "make test;"
+  },
+  "engines": {
+    "node": ">= 0.11.4"
+  }
+}
