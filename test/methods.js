@@ -7,7 +7,7 @@ var app = router(koa())
 
 app.use(function* (next) {
   try {
-    this.request.implementsMethod()
+    this.request.assertImplementsMethod()
   } catch (err) {
     this.status = 501
     return
@@ -28,7 +28,7 @@ app.search('/kasdjflkajsdf', function* (next) {
   this.status = 204
 })
 
-describe('request.implementsMethod()', function(){
+describe('request.assertImplementsMethod()', function(){
   it('should throw if not implemented', function (done) {
     request(server)
     .patch('/')
