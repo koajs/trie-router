@@ -1,4 +1,6 @@
-var METHODS = require('http').METHODS
+var METHODS = require('methods').map(function (method) {
+  return method.toUpperCase()
+})
 var request = require('supertest')
 var koa = require('koa')
 
