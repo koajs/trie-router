@@ -7,7 +7,7 @@ var app = router(koa())
 
 app.use(function* (next) {
   try {
-    this.request.assertImplementsMethod()
+    this.assertImplementsMethod()
   } catch (err) {
     this.status = 501
     return

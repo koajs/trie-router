@@ -31,7 +31,7 @@ app.post('/images', function* (next) {
 
 ## API
 
-### this.request.assertImplementsMethod()
+### this.assertImplementsMethod()
 
 Checks if the server implements a particular method and throws a `501` error otherwise.
 This is not middleware, so you would have to use it in your own middleware.
