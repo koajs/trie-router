@@ -1,7 +1,7 @@
 {
   "name": "koa-trie-router",
   "description": "Trie-routing for Koa",
-  "version": "0.0.2",
+  "version": "1.0.0",
   "author": {
     "name": "Jonathan Ong",
     "email": "me@jongleberry.com",
@@ -20,7 +20,7 @@
   "dependencies": {
     "routington": "*",
     "methods": "*",
-    "koa-compose": "koajs/compose"
+    "koa-compose": "~2.0.1"
   },
   "devDependencies": {
     "koa": "koajs/koa",
