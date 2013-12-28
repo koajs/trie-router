@@ -18,7 +18,7 @@
     "url": "https://github.com/koajs/trie-router/issues"
   },
   "dependencies": {
-    "routington": "~0.0.11",
+    "routington": "~0.1.1",
     "methods": "~0.1.0",
     "koa-compose": "~2.1.0"
   },
