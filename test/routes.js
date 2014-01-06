@@ -6,9 +6,9 @@ var koa = require('koa')
 
 var router = require('..')
 
-var app = router(koa())
+var app = koa()
 
-app.use(app.router)
+app.use(router(app))
 
 var server = app.listen()
 

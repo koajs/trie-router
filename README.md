@@ -15,9 +15,7 @@ See [routington](https://github.com/jonathanong/routington) for more details.
 
 ```js
 var app = require('koa')()
-require('koa-trie-router')(app)
-
-app.use(app.router)
+app.use(require('koa-trie-router')(app))
 
 app.route('/')
 .get(function* (next) {

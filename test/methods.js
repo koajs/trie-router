@@ -3,7 +3,7 @@ var koa = require('koa')
 
 var router = require('..')
 
-var app = router(koa())
+var app = koa()
 
 app.use(function* (next) {
   try {
@@ -16,7 +16,7 @@ app.use(function* (next) {
   yield* next
 })
 
-app.use(app.router)
+app.use(router(app))
 
 var server = app.listen()
 
