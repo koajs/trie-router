@@ -105,6 +105,12 @@ app.get('/user/:name', function* (next) {
 
 For path definitions, see [routington](https://github.com/jonathanong/routington).
 
+## Usage
+
+In `trie-router`, routes are orthogonal and strict. Unlike regexp routing, there's no wildcard routing and you can't `next` to the next matching route.
+
+
+
 ## License
 
 The MIT License (MIT)
