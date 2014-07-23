@@ -1,7 +1,7 @@
 {
   "name": "koa-trie-router",
   "description": "Trie-routing for Koa",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "author": {
     "name": "Jonathan Ong",
     "email": "me@jongleberry.com",
@@ -28,7 +28,9 @@
     "test-cov": "node --harmony-generators node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --require should",
     "test-travis": "node --harmony-generators node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter dot --require should"
   },
-  "files": ["lib"],
+  "files": [
+    "lib"
+  ],
   "main": "lib",
   "keywords": [
     "koa",
