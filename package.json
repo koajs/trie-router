@@ -11,17 +11,28 @@
   "license": "MIT",
   "repository": "koajs/trie-router",
   "dependencies": {
-    "routington": "0",
     "methods": "1",
+    "routington": "1",
     "koa-compose": "2"
   },
   "devDependencies": {
-    "koa": "*",
-    "mocha": "*",
-    "should": "*",
-    "supertest": "*"
+    "koa": "0",
+    "mocha": "1",
+    "should": "3",
+    "supertest": "0",
+    "istanbul-harmony": "0"
   },
   "scripts": {
-    "test": "mocha --require should --reporter spec --harmony-generators"
-  }
+    "test": "mocha --harmony-generators --reporter spec --require should",
+    "test-cov": "node --harmony-generators node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --require should",
+    "test-travis": "node --harmony-generators node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter dot --require should"
+  },
+  "files": ["lib"],
+  "main": "lib",
+  "keywords": [
+    "koa",
+    "koajs",
+    "router",
+    "trie"
+  ]
 }
