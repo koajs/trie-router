@@ -12,6 +12,7 @@
   "repository": "koajs/trie-router",
   "dependencies": {
     "methods": "1",
+    "flatten": "0",
     "routington": "1",
     "koa-compose": "2"
   },
