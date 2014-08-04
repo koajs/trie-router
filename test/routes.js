@@ -2,6 +2,7 @@ var METHODS = require('methods').map(function (method) {
   return method.toUpperCase()
 })
 var request = require('supertest')
+var assert = require('assert')
 var koa = require('koa')
 
 var router = require('..')
@@ -21,6 +22,12 @@ describe('app[method]()', function () {
     request(server)
     .get('/home')
     .expect(204, done)
+  })
+
+  it('should throw on non-gen-funs', function () {
+    assert.throws(function () {
+      app.get('/home', function () {})
+    })
   })
 
   it('should match params', function (done) {
