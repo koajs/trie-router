@@ -162,6 +162,17 @@ describe('404', function(){
     .get('/asdf')
     .expect(404, done)
   })
+
+  it('should 404 when not matched', function (done) {
+    app
+    .get('/app/home', function* (next) {
+      this.status = 204;
+    })
+
+    request(server)
+    .get('/app')
+    .expect(404, done)
+  })
 })
 
 function* noop(next) {
