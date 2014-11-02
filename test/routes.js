@@ -163,7 +163,7 @@ describe('404', function(){
     .expect(404, done)
   })
 
-  it('should 404 when not matched', function (done) {
+  it('should 404 when not matched w/ superior route', function (done) {
     app
     .get('/app/home', function* (next) {
       this.status = 204;
@@ -172,6 +172,37 @@ describe('404', function(){
     request(server)
     .get('/app')
     .expect(404, done)
+  })
+})
+
+describe('regressions', function () {
+  it('should not 404 with child routes', function (done) {
+    app
+    .get('/a', function* () {
+      this.response.status = 204;
+    })
+    .get('/a/b', function* () {
+      this.response.status = 204;
+    })
+    .get('/a/b/c', function* () {
+      this.response.status = 204;
+    })
+
+    request(server)
+    .get('/a')
+    .expect(204, function (err, res) {
+      assert.ifError(err);
+
+      request(server)
+      .get('/a/b')
+      .expect(204, function (err, res) {
+        assert.ifError(err);
+
+        request(server)
+        .get('/a/b/c')
+        .expect(204, done);
+      })
+    })
   })
 })
 
