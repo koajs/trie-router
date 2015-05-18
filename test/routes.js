@@ -175,6 +175,17 @@ describe('404', function(){
   })
 })
 
+  it('should 404 instead of throw for malformed url', function (done) {
+    app.get('/', function* (next) {
+      this.status = 204
+    })
+
+    request(server)
+    .get('/%')
+    .expect(404, done)
+  })
+
+
 describe('regressions', function () {
   it('should not 404 with child routes', function (done) {
     app
