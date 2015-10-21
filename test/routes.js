@@ -6,7 +6,6 @@ var assert = require('assert')
 var koa = require('koa')
 
 var router = require('..')
-var errors = require('../lib/errors')
 
 var app = koa()
 
