@@ -6,6 +6,7 @@ var assert = require('assert')
 var koa = require('koa')
 
 var router = require('..')
+var errors = require('../lib/errors')
 
 var app = koa()
 
@@ -173,6 +174,16 @@ describe('404', function(){
     .get('/app')
     .expect(404, done)
   })
+})
+
+it('should throw for malformed url', function (done) {
+  app.get('/', function* (next) {
+    this.status = 204
+  })
+
+  request(server)
+  .get('/%')
+  .expect(500, done)
 })
 
 describe('regressions', function () {
