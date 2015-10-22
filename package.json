@@ -25,9 +25,9 @@
     "istanbul-harmony": "0"
   },
   "scripts": {
-    "test": "mocha --harmony-generators --reporter spec --require should",
-    "test-cov": "node --harmony-generators node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --require should",
-    "test-travis": "node --harmony-generators node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter dot --require should"
+    "test": "mocha --harmony --reporter spec --require should",
+    "test-cov": "node --harmony node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha -- --reporter dot --require should",
+    "test-travis": "node --harmony node_modules/.bin/istanbul cover node_modules/mocha/bin/_mocha --report lcovonly -- --reporter dot --require should"
   },
   "files": [
     "lib"
