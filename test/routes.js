@@ -175,6 +175,39 @@ describe('404', function(){
   })
 })
 
+it('should 404 for uncaught malformed url', function (done) {
+  app.get('/', function* (next) {
+    this.status = 204
+  })
+
+  request(server)
+  .get('/%')
+  .expect(404, done)
+})
+
+it('should throw catchable error for malformed url', function (done) {
+  var app2 = koa()
+  app2.use(function* (next) {
+    try {
+      yield next
+    } catch (e) {
+      if (e.code == 'MALFORMEDURL') this.body = 'malformed URL'
+    }
+  })
+  app2.use(router(app2))
+
+  app2.get('/', function* (next) {
+    this.status = 204
+  })
+
+  request(app2.listen())
+  .get('/%%')
+  .expect(200, function (err, res) {
+    assert.equal(res.text, 'malformed URL')
+  })
+  .end(done)
+})
+
 describe('regressions', function () {
   it('should not 404 with child routes', function (done) {
     app

@@ -106,6 +106,13 @@ app.get('/user/:name', function* (next) {
 })
 ```
 
+### Error handling
+
+The middleware throws an error with `code` _MALFORMEDURL_ when it encounters
+a malformed path. An application can _try/catch_ this upstream, identify the error
+by its code, and handle it however the developer chooses in the context of the
+application- for example, re-throw as a 404.
+
 ### Path Definitions
 
 For path definitions, see [routington](https://github.com/jonathanong/routington).
