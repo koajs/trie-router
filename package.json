@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "koa": "0",
-    "mocha": "1",
+    "mocha": "2.4.1",
     "should": "8.1.1",
     "supertest": "0",
     "istanbul-harmony": "0"
