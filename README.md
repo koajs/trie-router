@@ -5,104 +5,115 @@
 [![Test coverage][coveralls-image]][coveralls-url]
 [![Gittip][gittip-image]][gittip-url]
 
+## About
+
 [Trie](http://en.wikipedia.org/wiki/Trie) routing for Koa based on [routington](https://github.com/jonathanong/routington).
+
+Routes are orthogonal and strict, so the order of definition doesn't matter.  
+Unlike regexp routing, there's no wildcard routing and you can't `next` to the next matching route.
+
+See [routington](https://github.com/jonathanong/routington) for more details.
+
+## Versions
+
++ **Koa@1** is compatible with `1.x.x` versions of Trie-router
++ **Koa@2** is compatible with `2.x.x` versions
 
 ## Features
 
-- `OPTIONS` support
-- `405 Method Not Allowed` support
-- `501 Not Implemented` support
++ Express-style routing using `router.get`, `router.put`, `router.post`, etc
++ Named URL parameters
++ Responds to `OPTIONS` requests with allowed methods
++ Multiple route middleware
++ Multiple routers
++ Nestable routers
++ `405 Method Not Allowed` support
++ `501 Not Implemented` support
 
-Routes are generally orthogonal, so the order of definition generally doesn't matter.
-See [routington](https://github.com/jonathanong/routington) for more details.
-
-## Installation
+## Usage
 
 ```js
-var app = require('koa')()
-app.use(require('koa-trie-router')(app))
+const Koa = require('koa')
+const Router = require('trie-router')
 
-app.route('/')
-.get(function* (next) {
-  this.body = 'homepage'
-})
+let app = new Koa()
+let router = new Router()
 
-app.post('/images', function* (next) {
-  var image = yield* this.request.buffer('25mb')
-})
+router
+  .get('/', function (ctx) {
+    ctx.body = 'Hello Trie-router!'
+  })
+  .post('/test', function (ctx) {
+    ctx.body = [1,2,3]
+  })
+
+app.use(router.middleware())
+app.listen(3000)
 ```
 
 ## API
 
-### this.assertImplementsMethod()
+### router\[method\]\(paths, ...middleware\)
 
-Checks if the server implements a particular method and throws a `501` error otherwise.
+Where 
++ `paths` is `{String|Array<String>}`
++ `middleware` is `{Function|Array<Function>|AsyncFunction|Array<AsyncFunction>}`
+
+Signature
+```js
+router
+  .get('/one', middleware)
+  .post(['/two','/three'], middleware)
+  .put(['/four'], [middleware, middleware])
+  .del('/five', middleware, middleware, middleware)
+```
+
+### router.middleware()
+
+Like Express, all routes belong to a single middleware.
+  
+You can use `koa-mount` for mounting of multiple routers:
+```js
+const Koa = require('koa')
+const mount = require('koa-mount')
+const Router = require('trie-router')
+
+let app = new Koa()
+let router1 = new Router()
+let router2 = new Router()
+
+router1.get('/foo', middleware)
+router2.get('/bar', middleware)
+
+app.use(mount('/foo', router1.middleware()))
+app.use(mount('/bar', router2.middleware()))
+```
+
+### router.isImplementedMethod(method)
+
+Checks if the server implements a particular method and returns `true` or `false`.
 This is not middleware, so you would have to use it in your own middleware.
 
 ```js
-app.use(myCustomErrorHandler)
-
-app.use(function* (next) {
-  this.request.assertImplementsMethod() // throws otherwise
-  yield next
+app.use(function(ctx, next) {
+  if (!router.isImplementedMethod(ctx.method)) {
+    ctx.status = 501
+    return
+  }
+  next()
 })
 ```
 
-### app.use(app.router)
 
-Like Express, all routes belong to a single middleware.
-Unlike Express, `app.router` is not implicitly mounted.
-If you do not do `app.use(app.router)` ever,
-routing will never work.
+### ctx.params
 
-### app.route(paths)\[method\]\(middleware...\)
-
-`paths` can be a nested stack of string paths:
+`ctx.params` will be defined with any matched parameters.
 
 ```js
-app.route('/one', [
-  '/two',
-  ['/three', '/four']
-])
-```
-
-You can then chain `[method](middleware...)` calls.
-
-```js
-app.route('/')
-.get(function* (next) {
-
-})
-.post(function* (next) {
-
-})
-.patch(function* (next) {
-
-})
-```
-
-### app\[method\]\(paths, middleware...\)
-
-Similar to above, but you define `paths` as the first argument:
-
-```js
-app.get([
-  '/one',
-  '/two'
-], function* (next) {
-
-})
-```
-
-### this.params
-
-`this.params` will be defined with any matched parameters.
-
-```js
-app.get('/user/:name', function* (next) {
-  var name = this.params.name
-  var user = yield User.get(name)
-  yield next
+router.get('/user/:name', function (ctx, next) {
+  let name = this.params.name
+  let user = await User.get(name)
+  next()
 })
 ```
 
@@ -117,59 +128,6 @@ application- for example, re-throw as a 404.
 
 For path definitions, see [routington](https://github.com/jonathanong/routington).
 
-## Usage
-
-In `trie-router`, routes are orthogonal and strict. Unlike regexp routing, there's no wildcard routing and you can't `next` to the next matching route.
-
-## Cookbook
-
-### Multiple routers with one application / Mounting of routers
-
-Create a simple **Router.js** file
-
-```js
-const Koa = require('koa');
-const compose = require('koa-compose');
-const trieRouter = require('koa-trie-router');
-
-class Router extends Koa {
-  constructor() {
-    super();
-    this.use(trieRouter(this));
-  }
-  routes() {
-    return compose(this.middleware);
-  }
-}
-
-module.exports = Router;
-```
-
-and use it
-
-```js
-const Router = require('Router');
-const Koa = require('koa');
-const mount = require('koa-mount');
-
-let app = new Koa();
-
-let routerFoo = new Router();
-let routerBar = new Router();
-let routerBaz = new Router();
-
-// API is the API of Trie-Router
-routerFoo.get('/', /*middlewares*/);
-// routerBar.post(/*path*/, /*middlewares*/);
-// routerBaz.post(/*path*/, /*middlewares*/);
-// ...
-
-app.use(routerFoo.routes());
-app.use(mount('/bar', routerBar)); // or routerBar.routes()
-app.use(mount('/baz', routerBaz)); // or routerBaz.routes()
-
-app.listen(3000);
-```
 
 [npm-image]: https://img.shields.io/npm/v/koa-trie-router.svg?style=flat
 [npm-url]: https://npmjs.org/package/koa-trie-router

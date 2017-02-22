@@ -1,244 +1,188 @@
-var METHODS = require('methods').map(function (method) {
-  return method.toUpperCase()
-})
-var request = require('supertest')
-var assert = require('assert')
-var koa = require('koa')
 
-var router = require('..')
+const AssertRequest = require('assert-request')
+const assert = require('assert')
+const methods = require('methods')
+const Koa = require('koa')
+const Router = require('..')
+const {noop} = require('./../lib/lang')
 
-var app = koa()
+let app = new Koa()
+let router = new Router()
+let request = AssertRequest(app.listen()) // You can use a server or protocol and host
 
-app.use(router(app))
 
-var server = app.listen()
+app.use(router.middleware())
 
-describe('app[method]()', function () {
-  it('should work', function (done) {
-    app.get('/home', function* (next) {
-      this.status = 204
+
+describe('router[method]()', function () {
+  it('should work', function () {
+    router.get('/home', function (ctx) {
+      ctx.status = 204
     })
 
-    request(server)
-    .get('/home')
-    .expect(204, done)
+    return request
+      .get('/home')
+      .status(204)
   })
 
-  it('should throw on non-gen-funs', function () {
+  it('should throw on non-funs', function () {
     assert.throws(function () {
-      app.get('/home', function () {})
+      app.get('/home', null)
     })
   })
 
-  it('should match params', function (done) {
-    app.get('/:a(one)/:b(two)', function* (next) {
-      this.params.a.should.equal('one')
-      this.params.b.should.equal('two')
-      this.status = 204
+  it('should match params', function () {
+    router.get('/:a(one)/:b(two)', function (ctx) {
+      ctx.params.a.should.equal('one')
+      ctx.params.b.should.equal('two')
+      ctx.status = 204
     })
 
-    request(server)
-    .get('/one/two')
-    .expect(204, done)
+    return request
+      .get('/one/two')
+      .status(204)
   })
 
-  it('should still have this.params with no matched params', function (done) {
-    app.get('/asdfasdf', function* (next) {
-      this.params.should.eql({})
-      this.status = 204
+  it('should still have this.params with no matched params', function () {
+    router.get('/asdfasdf', function (ctx) {
+      ctx.params.should.eql({})
+      ctx.status = 204
     })
 
-    request(server)
-    .get('/asdfasdf')
-    .expect(204, done)
-  })
-
-  it('should have all the methods defined', function () {
-    METHODS.forEach(function (method) {
-      app[method.toLowerCase()].should.be.a.Function
-    })
-
-    app.del.should.be.a.Function
-  })
-
-  describe('when defining nested routes', function () {
-    app.get(['/stack/one', ['/stack/two', '/stack/three']], function* (next) {
-      this.status = 204
-    })
-
-    it('the first should work', function (done) {
-      request(server)
-      .get('/stack/one')
-      .expect(204, done)
-    })
-
-    it('the second should work', function (done) {
-      request(server)
-      .get('/stack/two')
-      .expect(204, done)
-    })
-
-    it('the third should work', function (done) {
-      request(server)
-      .get('/stack/three')
-      .expect(204, done)
-    })
-  })
-
-  describe('when defining nested middleware', function (done) {
-    app.get('/two', noop, [noop, noop], function* (next) {
-      this.status = 204
-    })
-
-    request(server)
-    .get('/two')
-    .expect(204, done)
-  })
-})
-
-describe('app.route()', function () {
-  it('should work', function (done) {
-    app.route('/something').get(function* (next) {
-      this.status = 204
-    })
-
-    request(server)
-    .get('/something')
-    .expect(204, done)
+    return request
+      .get('/asdfasdf')
+      .status(204)
   })
 
   it('should have all the methods defined', function () {
-    var route = app.route('/kajsdlfkjasldkfj')
-
-    METHODS.forEach(function (method) {
-      route[method.toLowerCase()].should.be.a.Function
-    })
-
-    route.del.should.be.a.Function
+    for(let method of methods) {
+      router[method].should.be.a.Function
+    }
+    router.del.should.be.a.Function
   })
 
   describe('when defining nested routes', function () {
-    app
-    .route(['/stack2/one', ['/stack2/two', '/stack2/three']])
-    .get(function* (next) {
-      this.status = 204
+    router.get(['/stack/one', ['/stack/two', '/stack/three']], function (ctx) {
+      ctx.status = 204
     })
 
-    it('the first should work', function (done) {
-      request(server)
-      .get('/stack2/one')
-      .expect(204, done)
+    it('the first should work', function () {
+      return request
+        .get('/stack/one')
+        .status(204)
     })
 
-    it('the second should work', function (done) {
-      request(server)
-      .get('/stack2/two')
-      .expect(204, done)
+    it('the second should work', function () {
+      return request
+        .get('/stack/two')
+        .status(204)
     })
 
-    it('the third should work', function (done) {
-      request(server)
-      .get('/stack2/three')
-      .expect(204, done)
+    it('the third should work', function () {
+      return request
+        .get('/stack/three')
+        .status(204)
     })
   })
 
-  describe('when defining nested middleware', function (done) {
-    app
-    .route('/monkey')
-    .get(noop, [noop, noop], function* (next) {
-      this.status = 204
+  describe('when defining nested middleware', function () {
+    router.get('/two', noop, [noop, noop], function (ctx) {
+      ctx.status = 204
     })
 
-    request(server)
-    .get('/monkey')
-    .expect(204, done)
+    return request
+      .get('/two')
+      .status(204)
   })
 })
+
 
 describe('404', function(){
-  it('should 404 when not matched', function (done) {
-    request(server)
-    .get('/asdf')
-    .expect(404, done)
+  it('should 404 when not matched', function () {
+    return request
+      .get('/asdf')
+      .status(404)
   })
 
-  it('should 404 when not matched w/ superior route', function (done) {
-    app
-    .get('/app/home', function* (next) {
-      this.status = 204;
+  it('should 404 when not matched w/ superior route', function () {
+    router
+      .get('/app/home', function (ctx) {
+        ctx.status = 204;
+      })
+
+    return request
+      .get('/app')
+      .status(404)
+  })
+})
+
+
+describe('malformed url', function () {
+  it('should 404 for uncaught malformed url', function () {
+    router.get('/', function (ctx) {
+      ctx.status = 204
     })
 
-    request(server)
-    .get('/app')
-    .expect(404, done)
+    return request
+      .get('/%')
+      .status(404)
+  })
+
+  it('should throw catchable error for malformed url', function () {
+    let app2 = new Koa()
+    let router2 = new Router()
+    let request2 = AssertRequest(app2.listen()) // You can use a server or protocol and host
+
+    app2.use(async function (ctx, next) {
+      try {
+        await next()
+      } catch (e) {
+        if (e.code == 'MALFORMEDURL') {
+          ctx.body = 'malformed URL'
+        }
+      }
+    })
+    router2.get('/', function (ctx) {
+      ctx.status = 204
+    })
+    app2.use(router2.middleware())
+
+    return request2
+      .get('/%%')
+      .body('malformed URL')
   })
 })
 
-it('should 404 for uncaught malformed url', function (done) {
-  app.get('/', function* (next) {
-    this.status = 204
-  })
-
-  request(server)
-  .get('/%')
-  .expect(404, done)
-})
-
-it('should throw catchable error for malformed url', function (done) {
-  var app2 = koa()
-  app2.use(function* (next) {
-    try {
-      yield next
-    } catch (e) {
-      if (e.code == 'MALFORMEDURL') this.body = 'malformed URL'
-    }
-  })
-  app2.use(router(app2))
-
-  app2.get('/', function* (next) {
-    this.status = 204
-  })
-
-  request(app2.listen())
-  .get('/%%')
-  .expect(200, function (err, res) {
-    assert.equal(res.text, 'malformed URL')
-  })
-  .end(done)
-})
 
 describe('regressions', function () {
-  it('should not 404 with child routes', function (done) {
-    app
-    .get('/a', function* () {
-      this.response.status = 204;
-    })
-    .get('/a/b', function* () {
-      this.response.status = 204;
-    })
-    .get('/a/b/c', function* () {
-      this.response.status = 204;
-    })
-
-    request(server)
-    .get('/a')
-    .expect(204, function (err, res) {
-      assert.ifError(err);
-
-      request(server)
-      .get('/a/b')
-      .expect(204, function (err, res) {
-        assert.ifError(err);
-
-        request(server)
-        .get('/a/b/c')
-        .expect(204, done);
+  describe('should not 404 with child routes', function () {
+    router
+      .get('/a', function (ctx) {
+        ctx.status = 204;
       })
+      .get('/a/b', function (ctx) {
+        ctx.status = 204;
+      })
+      .get('/a/b/c', function (ctx) {
+        ctx.status = 204;
+      })
+
+    it('should work /a', function () {
+      return request
+        .get('/a')
+        .status(204)
+    })
+    it('should work /a/b', function () {
+      return request
+        .get('/a/b')
+        .status(204)
+    })
+    it('should work /a/b/c', function () {
+      return request
+        .get('/a/b/c')
+        .status(204)
     })
   })
 })
 
-function* noop(next) {
-  yield* next
-}
+

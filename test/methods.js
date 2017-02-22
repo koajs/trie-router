@@ -1,73 +1,71 @@
-var request = require('supertest')
-var koa = require('koa')
 
-var router = require('..')
+const AssertRequest = require('assert-request')
+const Koa = require('koa')
+const Router = require('..')
 
-var app = koa()
+let app = new Koa()
+let router = new Router()
+let request = AssertRequest(app.listen()); // You can use a server or protocol and host
 
-app.use(function* (next) {
-  try {
-    this.assertImplementsMethod()
-  } catch (err) {
-    this.status = 501
+app.use(function(ctx, next) {
+  if (!router.isImplementedMethod(ctx.method)) {
+    ctx.status = 501
     return
   }
-
-  yield* next
+  next()
 })
 
-app.use(router(app))
-
-var server = app.listen()
-
-app.get('/', function* (next) {
-  this.status = 204
-})
-
-app.search('/kasdjflkajsdf', function* (next) {
-  this.status = 204
-})
-
-describe('request.assertImplementsMethod()', function(){
-  it('should throw if not implemented', function (done) {
-    request(server)
-    .patch('/')
-    .expect(501, done)
+router
+  .get('/', function (ctx) {
+    ctx.status = 204
+  })
+  .search('/kasdjflkajsdf', function (ctx) {
+    ctx.status = 204
   })
 
-  it('should not throw if implemented', function (done) {
-    request(server)
+app.use(router.middleware())
+
+
+describe('router.isImplementedMethod()', function(){
+  it('should return 501 if not implemented', function () {
+    return request
+    .patch('/')
+    .status(501)
+  })
+
+  it('should not return 501 if implemented', function () {
+    return request
     .get('/')
-    .expect(204, done)
+    .status(204)
   })
 })
 
 describe('OPTIONS', function(){
-  it('should send Allow', function (done) {
-    request(server)
+  it('should send Allow', function () {
+    return request
     .options('/')
-    .expect('Allow', /\bGET\b/)
-    .expect('Allow', /\bHEAD\b/)
-    .expect('Allow', /\bOPTIONS\b/)
-    .expect(204, done)
+    .header('Allow', /\bGET\b/)
+    .header('Allow', /\bHEAD\b/)
+    .header('Allow', /\bOPTIONS\b/)
+    .status(204)
   })
 })
 
 describe('405 Method Not Allowed', function(){
-  it('should send Allow', function (done) {
-    request(server)
+  it('should send Allow', function () {
+    return request
     .search('/')
-    .expect('Allow', /\bGET\b/)
-    .expect('Allow', /\bHEAD\b/)
-    .expect('Allow', /\bOPTIONS\b/)
-    .expect(405, done)
+    .header('Allow', /\bGET\b/)
+    .header('Allow', /\bHEAD\b/)
+    .header('Allow', /\bOPTIONS\b/)
+    .status(405)
   })
 })
 
 describe('HEAD', function(){
-  it('should respond with GET if not defined', function (done) {
-    request(server)
+  it('should respond with GET if not defined', function () {
+    return request
     .head('/')
-    .expect(204, done)
+    .status(204)
   })
 })
