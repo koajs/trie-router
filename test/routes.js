@@ -4,7 +4,6 @@ const assert = require('assert')
 const methods = require('methods')
 const Koa = require('koa')
 const Router = require('..')
-const {noop} = require('./../lib/lang')
 
 let app = new Koa()
 let router = new Router()
@@ -86,7 +85,11 @@ describe('router[method]()', function () {
   })
 
   describe('when defining nested middleware', function () {
-    router.get('/two', noop, [noop, noop], function (ctx) {
+    function next(ctx, next) {
+      next()
+    }
+
+    router.get('/two', next, [next, next], function (ctx) {
       ctx.status = 204
     })
 
