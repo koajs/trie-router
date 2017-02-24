@@ -40,11 +40,19 @@ let app = new Koa()
 let router = new Router()
 
 router
-  .get('/', function (ctx) {
-    ctx.body = 'Hello Trie-router!'
+  .use(function(ctx, next) {
+    console.log('* requests')
+    next()
   })
-  .post('/test', function (ctx) {
-    ctx.body = [1,2,3]
+  .get(function(ctx, next) {
+    console.log('GET requests')
+    next()
+  })
+  .put('/foo', function (ctx) {
+    ctx.body = 'PUT /foo requests'
+  })
+  .post('/bar', function (ctx) {
+    ctx.body = 'POST /bar requests'
   })
 
 app.use(router.middleware())
@@ -53,7 +61,24 @@ app.listen(3000)
 
 ## API
 
-### router\[method\]\(paths, ...middleware\)
+### router.use(middleware...)
+Handles all requests
+```js
+router.use(function(ctx) {
+  ctx.body = 'test' // All requests
+})
+```
+
+### router\[method\](middleware...)
+Handles requests only by one HTTP method
+```js
+router.get(function(ctx) {
+  ctx.body = 'GET' // All GET requests
+})
+```
+
+### router\[method\]\(paths, middleware...\)
+Handles requests only by one HTTP method and one route
 
 Where 
 + `paths` is `{String|Array<String>}`
@@ -111,7 +136,7 @@ app.use(function(ctx, next) {
 
 ```js
 router.get('/user/:name', function (ctx, next) {
-  let name = this.params.name
+  let name = ctx.params.name
   let user = await User.get(name)
   next()
 })
