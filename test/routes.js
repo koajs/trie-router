@@ -88,14 +88,33 @@ describe('router[method]()', function () {
     function next(ctx, next) {
       next()
     }
-
     router.get('/two', next, [next, next], function (ctx) {
       ctx.status = 204
     })
+    it('should work', function () {
+      return request
+        .get('/two')
+        .status(204)
+    })
+  })
 
-    return request
-      .get('/two')
-      .status(204)
+  describe('when defining same route few times', function () {
+    router.get('/three', function (ctx, next) {
+      ctx.status = 202
+      next()
+    })
+    router.get('/three', function (ctx, next) {
+      ctx.status += 1
+      next()
+    })
+    router.get('/three', function (ctx) {
+      ctx.status += 1
+    })
+    it('should work', function () {
+      return request
+        .get('/three')
+        .status(204)
+    })
   })
 })
 
