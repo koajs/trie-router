@@ -135,7 +135,7 @@ app.use(function(ctx, next) {
 `ctx.params` will be defined with any matched parameters.
 
 ```js
-router.get('/user/:name', function (ctx, next) {
+router.get('/user/:name', async function (ctx, next) {
   let name = ctx.params.name
   let user = await User.get(name)
   next()
