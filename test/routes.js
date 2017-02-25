@@ -58,19 +58,19 @@ describe('router.use()', function () {
       .status(204)
   })
   it('should work with multiple middleware', function () {
-    router.get('/three', function (ctx, next) {
+    router.use(function (ctx, next) {
       ctx.status = 202
       next()
     })
-    router.get('/three', function (ctx, next) {
+    router.use(function (ctx, next) {
       ctx.status += 1
       next()
     })
-    router.get('/three', function (ctx) {
+    router.use(function (ctx) {
       ctx.status += 1
     })
     return request
-      .get('/three')
+      .get('/')
       .status(204)
   })
   it('should working with ctx.params if middleware with params were defined', function () {
