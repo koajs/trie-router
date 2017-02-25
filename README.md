@@ -73,7 +73,7 @@ router.use(function(ctx) {
 Handles requests only by one HTTP method
 ```js
 router.get(function(ctx) {
-  ctx.body = 'GET' // All GET requests
+  ctx.body = 'GET' // GET requests
 })
 ```
 
@@ -153,56 +153,6 @@ application- for example, re-throw as a 404.
 
 For path definitions, see [routington](https://github.com/jonathanong/routington).
 
-
-## Cookbook
-
-### Multiple routers with one application / Mounting of routers
-
-Create a simple **Router.js** file
-
-```js
-const Koa = require('koa');
-const compose = require('koa-compose');
-const trieRouter = require('koa-trie-router');
-
-class Router extends Koa {
-  constructor() {
-    super();
-    this.use(trieRouter(this));
-  }
-  routes() {
-    return compose(this.middleware);
-  }
-}
-
-module.exports = Router;
-```
-
-and use it
-
-```js
-const Router = require('Router');
-const Koa = require('koa');
-const mount = require('koa-mount');
-
-let app = new Koa();
-
-let routerFoo = new Router();
-let routerBar = new Router();
-let routerBaz = new Router();
-
-// API is the API of Trie-Router
-routerFoo.get('/', /*middlewares*/);
-// routerBar.post(/*path*/, /*middlewares*/);
-// routerBaz.post(/*path*/, /*middlewares*/);
-// ...
-
-app.use(routerFoo.routes());
-app.use(mount('/bar', routerBar)); // or routerBar.routes()
-app.use(mount('/baz', routerBaz)); // or routerBaz.routes()
-
-app.listen(3000);
-```
 
 [npm-image]: https://img.shields.io/npm/v/koa-trie-router.svg?style=flat
 [npm-url]: https://npmjs.org/package/koa-trie-router
