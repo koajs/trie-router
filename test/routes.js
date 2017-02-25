@@ -1,244 +1,351 @@
-var METHODS = require('methods').map(function (method) {
-  return method.toUpperCase()
-})
-var request = require('supertest')
-var assert = require('assert')
-var koa = require('koa')
 
-var router = require('..')
+const AssertRequest = require('assert-request')
+const assert = require('assert')
+const methods = require('methods')
+const Koa = require('koa')
+const Router = require('..')
 
-var app = koa()
 
-app.use(router(app))
+let app
+let server
+let router
+let request
 
-var server = app.listen()
+function prepare(done) {
+  app = new Koa()
+  router = new Router()
+  server = app.listen(done)
+  request = AssertRequest(server)
+  app.use(router.middleware())
+}
 
-describe('app[method]()', function () {
-  it('should work', function (done) {
-    app.get('/home', function* (next) {
-      this.status = 204
-    })
+function clean(done) {
+  server.close(done)
+}
 
-    request(server)
-    .get('/home')
-    .expect(204, done)
-  })
 
-  it('should throw on non-gen-funs', function () {
-    assert.throws(function () {
-      app.get('/home', function () {})
-    })
-  })
+function next(ctx, next) {
+  next()
+}
 
-  it('should match params', function (done) {
-    app.get('/:a(one)/:b(two)', function* (next) {
-      this.params.a.should.equal('one')
-      this.params.b.should.equal('two')
-      this.status = 204
-    })
 
-    request(server)
-    .get('/one/two')
-    .expect(204, done)
-  })
-
-  it('should still have this.params with no matched params', function (done) {
-    app.get('/asdfasdf', function* (next) {
-      this.params.should.eql({})
-      this.status = 204
-    })
-
-    request(server)
-    .get('/asdfasdf')
-    .expect(204, done)
-  })
+describe('public methods', function () {
+  before(prepare)
+  after(clean)
 
   it('should have all the methods defined', function () {
-    METHODS.forEach(function (method) {
-      app[method.toLowerCase()].should.be.a.Function
-    })
-
-    app.del.should.be.a.Function
-  })
-
-  describe('when defining nested routes', function () {
-    app.get(['/stack/one', ['/stack/two', '/stack/three']], function* (next) {
-      this.status = 204
-    })
-
-    it('the first should work', function (done) {
-      request(server)
-      .get('/stack/one')
-      .expect(204, done)
-    })
-
-    it('the second should work', function (done) {
-      request(server)
-      .get('/stack/two')
-      .expect(204, done)
-    })
-
-    it('the third should work', function (done) {
-      request(server)
-      .get('/stack/three')
-      .expect(204, done)
-    })
-  })
-
-  describe('when defining nested middleware', function (done) {
-    app.get('/two', noop, [noop, noop], function* (next) {
-      this.status = 204
-    })
-
-    request(server)
-    .get('/two')
-    .expect(204, done)
-  })
-})
-
-describe('app.route()', function () {
-  it('should work', function (done) {
-    app.route('/something').get(function* (next) {
-      this.status = 204
-    })
-
-    request(server)
-    .get('/something')
-    .expect(204, done)
-  })
-
-  it('should have all the methods defined', function () {
-    var route = app.route('/kajsdlfkjasldkfj')
-
-    METHODS.forEach(function (method) {
-      route[method.toLowerCase()].should.be.a.Function
-    })
-
-    route.del.should.be.a.Function
-  })
-
-  describe('when defining nested routes', function () {
-    app
-    .route(['/stack2/one', ['/stack2/two', '/stack2/three']])
-    .get(function* (next) {
-      this.status = 204
-    })
-
-    it('the first should work', function (done) {
-      request(server)
-      .get('/stack2/one')
-      .expect(204, done)
-    })
-
-    it('the second should work', function (done) {
-      request(server)
-      .get('/stack2/two')
-      .expect(204, done)
-    })
-
-    it('the third should work', function (done) {
-      request(server)
-      .get('/stack2/three')
-      .expect(204, done)
-    })
-  })
-
-  describe('when defining nested middleware', function (done) {
-    app
-    .route('/monkey')
-    .get(noop, [noop, noop], function* (next) {
-      this.status = 204
-    })
-
-    request(server)
-    .get('/monkey')
-    .expect(204, done)
-  })
-})
-
-describe('404', function(){
-  it('should 404 when not matched', function (done) {
-    request(server)
-    .get('/asdf')
-    .expect(404, done)
-  })
-
-  it('should 404 when not matched w/ superior route', function (done) {
-    app
-    .get('/app/home', function* (next) {
-      this.status = 204;
-    })
-
-    request(server)
-    .get('/app')
-    .expect(404, done)
-  })
-})
-
-it('should 404 for uncaught malformed url', function (done) {
-  app.get('/', function* (next) {
-    this.status = 204
-  })
-
-  request(server)
-  .get('/%')
-  .expect(404, done)
-})
-
-it('should throw catchable error for malformed url', function (done) {
-  var app2 = koa()
-  app2.use(function* (next) {
-    try {
-      yield next
-    } catch (e) {
-      if (e.code == 'MALFORMEDURL') this.body = 'malformed URL'
+    for(let method of methods) {
+      router[method].should.be.a.Function
     }
+    router.del.should.be.a.Function
   })
-  app2.use(router(app2))
-
-  app2.get('/', function* (next) {
-    this.status = 204
+  it('should have use() method', function () {
+    router.use.should.be.a.Function
   })
-
-  request(app2.listen())
-  .get('/%%')
-  .expect(200, function (err, res) {
-    assert.equal(res.text, 'malformed URL')
-  })
-  .end(done)
 })
 
-describe('regressions', function () {
-  it('should not 404 with child routes', function (done) {
-    app
-    .get('/a', function* () {
-      this.response.status = 204;
+
+describe('router.use()', function () {
+  beforeEach(prepare)
+  afterEach(clean)
+
+  it('should work with any http method', function () {
+    router.use(function (ctx) {
+      ctx.status = 204
     })
-    .get('/a/b', function* () {
-      this.response.status = 204;
+    return request
+      .get('/')
+      .status(204)
+  })
+  it('should work with multiple middleware', function () {
+    router.get('/three', function (ctx, next) {
+      ctx.status = 202
+      next()
     })
-    .get('/a/b/c', function* () {
-      this.response.status = 204;
+    router.get('/three', function (ctx, next) {
+      ctx.status += 1
+      next()
+    })
+    router.get('/three', function (ctx) {
+      ctx.status += 1
+    })
+    return request
+      .get('/three')
+      .status(204)
+  })
+  it('should working with ctx.params if middleware with params were defined', function () {
+    router.use(function (ctx) {
+      ctx.params.a.should.equal('one')
+      ctx.params.b.should.equal('two')
+      ctx.status = 204
+    })
+    router.get('/:a(one)/:b(two)', next)
+
+    return request
+      .get('/one/two')
+      .status(204)
+  })
+  it('should still have ctx.params with no matched params', function () {
+    router.use(function (ctx) {
+      ctx.params.should.eql({})
+      ctx.status = 204
+    })
+    router.get('/asdfasdf', next)
+
+    return request
+      .get('/asdfasdf')
+      .status(204)
+  })
+})
+
+
+describe('router[method]()', function () {
+  beforeEach(prepare)
+  afterEach(clean)
+
+  it('should work with if implemented', function () {
+    router.get(function (ctx) {
+      ctx.status = 204
+    })
+    return request
+      .get('/')
+      .status(204)
+  })
+  it('should work with multiple middleware', function () {
+    router.get(function (ctx, next) {
+      ctx.status = 202
+      next()
+    })
+    router.get(function (ctx, next) {
+      ctx.status += 1
+      next()
+    })
+    router.get(function (ctx) {
+      ctx.status += 1
+    })
+    return request
+      .get('/one')
+      .status(204)
+  })
+})
+
+
+describe('router[method](path, [fn...])', function () {
+  before(prepare)
+  after(clean)
+
+  describe('when use path in rote definition', function () {
+    it('should work', function () {
+      router.get('/home', function (ctx) {
+        ctx.status = 204
+      })
+
+      return request
+        .get('/home')
+        .status(204)
     })
 
-    request(server)
-    .get('/a')
-    .expect(204, function (err, res) {
-      assert.ifError(err);
-
-      request(server)
-      .get('/a/b')
-      .expect(204, function (err, res) {
-        assert.ifError(err);
-
-        request(server)
-        .get('/a/b/c')
-        .expect(204, done);
+    it('should throw on non-funs', function () {
+      assert.throws(function () {
+        app.get('/home', null)
       })
     })
   })
+
+  describe('when working with ctx.params', function () {
+    it('should match params', function () {
+      router.get('/:a(one)/:b(two)', function (ctx) {
+        ctx.params.a.should.equal('one')
+        ctx.params.b.should.equal('two')
+        ctx.status = 204
+      })
+
+      return request
+        .get('/one/two')
+        .status(204)
+    })
+
+    it('should still have ctx.params with no matched params', function () {
+      router.get('/asdfasdf', function (ctx) {
+        ctx.params.should.eql({})
+        ctx.status = 204
+      })
+
+      return request
+        .get('/asdfasdf')
+        .status(204)
+    })
+  })
+
+  describe('when define nested middleware', function () {
+    it('should work', function () {
+      router.get('/two', next, [next, next], function (ctx) {
+        ctx.status = 204
+      })
+      return request
+        .get('/two')
+        .status(204)
+    })
+  })
+
+  describe('when defining same route few times', function () {
+    it('should work', function () {
+      router.get('/three', function (ctx, next) {
+        ctx.status = 202
+        next()
+      })
+      router.get('/three', function (ctx, next) {
+        ctx.status += 1
+        next()
+      })
+      router.get('/three', function (ctx) {
+        ctx.status += 1
+      })
+      return request
+        .get('/three')
+        .status(204)
+    })
+  })
+
+  describe('when defining nested routes', function () {
+    it('the first should work', function () {
+      router.get(['/stack/one', ['/stack/two', '/stack/three']], function (ctx) {
+        ctx.status = 204
+      })
+      return request
+        .get('/stack/one')
+        .status(204)
+    })
+
+    it('the second should work', function () {
+      return request
+        .get('/stack/two')
+        .status(204)
+    })
+
+    it('the third should work', function () {
+      return request
+        .get('/stack/three')
+        .status(204)
+    })
+  })
 })
 
-function* noop(next) {
-  yield* next
-}
+
+describe('router methods', function () {
+  beforeEach(prepare)
+  afterEach(clean)
+
+  it('order of definition does not matter', function () {
+    router.get('/three', function (ctx) {
+      ctx.state.x.should.be.equal(2)
+      ctx.status = 204
+    })
+    router.get(function (ctx, next) {
+      ctx.state.x.should.be.equal(1)
+      ctx.state.x += 1;
+      next()
+    })
+    router.use(function (ctx, next) {
+      assert(ctx.state.x === undefined)
+      ctx.state.x = 1
+      next()
+    })
+    return request
+      .get('/three')
+      .status(204)
+  })
+})
+
+
+describe('404', function(){
+  before(prepare)
+  after(clean)
+
+  it('should 404 when not matched', function () {
+    return request
+      .get('/asdf')
+      .status(404)
+  })
+
+  it('should 404 when not matched w/ superior route', function () {
+    router
+      .get('/app/home', function (ctx) {
+        ctx.status = 204;
+      })
+
+    return request
+      .get('/app')
+      .status(404)
+  })
+})
+
+
+describe('malformed url', function () {
+  beforeEach(prepare)
+  afterEach(clean)
+
+  it('should 404 for uncaught malformed url', function () {
+    router.get('/', function (ctx) {
+      ctx.status = 204
+    })
+    return request
+      .get('/%')
+      .status(404)
+  })
+
+  it('should throw catchable error for malformed url', function () {
+    // Error handler should be set before a middleware which throws a error
+    app.middleware.unshift(async function (ctx, next) {
+      try {
+        await next()
+      } catch (e) {
+        if (e.code == 'MALFORMEDURL') {
+          ctx.body = 'malformed URL'
+        }
+      }
+    })
+    router.get('/', function (ctx) {
+      ctx.status = 204
+    })
+
+    return request
+      .get('/%%')
+      .body('malformed URL')
+  })
+})
+
+
+describe('regressions', function () {
+  before(prepare)
+  after(clean)
+  describe('should not 404 with child routes', function () {
+    it('should work /a', function () {
+      router
+        .get('/a', function (ctx) {
+          ctx.status = 204;
+        })
+        .get('/a/b', function (ctx) {
+          ctx.status = 204;
+        })
+        .get('/a/b/c', function (ctx) {
+          ctx.status = 204;
+        })
+      return request
+        .get('/a')
+        .status(204)
+    })
+    it('should work /a/b', function () {
+      return request
+        .get('/a/b')
+        .status(204)
+    })
+    it('should work /a/b/c', function () {
+      return request
+        .get('/a/b/c')
+        .status(204)
+    })
+  })
+})
+
+
