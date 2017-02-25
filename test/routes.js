@@ -57,6 +57,16 @@ describe('router.use()', function () {
       .get('/')
       .status(204)
   })
+  it('should support chaining', function () {
+    router
+      .use(next)
+      .use(function (ctx) {
+        ctx.status = 204
+      })
+    return request
+      .get('/')
+      .status(204)
+  })
   it('should work with multiple middleware', function () {
     router.use(function (ctx, next) {
       ctx.status = 202
