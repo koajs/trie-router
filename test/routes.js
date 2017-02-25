@@ -187,6 +187,14 @@ describe('router[method](path, [fn...])', function () {
     })
   })
 
+  describe('when working with next()', function () {
+    it('next() should be a function', function () {
+      router.get('/', function (ctx, next) {
+        next.should.be.a.Function
+      })
+    })
+  })
+
   describe('when define nested middleware', function () {
     it('should work', function () {
       router.get('/two', next, [next, next], function (ctx) {
