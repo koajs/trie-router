@@ -34,7 +34,7 @@ See [routington](https://github.com/jonathanong/routington) for more details.
 
 ```js
 const Koa = require('koa')
-const Router = require('trie-router')
+const Router = require('koa-trie-router')
 
 let app = new Koa()
 let router = new Router()
@@ -101,7 +101,7 @@ You can use `koa-mount` for mounting of multiple routers:
 ```js
 const Koa = require('koa')
 const mount = require('koa-mount')
-const Router = require('trie-router')
+const Router = require('koa-trie-router')
 
 let app = new Koa()
 let router1 = new Router()
