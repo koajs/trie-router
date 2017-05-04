@@ -83,6 +83,24 @@ describe('router.use()', function () {
       .get('/')
       .status(204)
   })
+  it('should work with an array of middleware', function () {
+    router.use([
+      function (ctx, next) {
+        ctx.status = 202
+        next()
+      },
+      function (ctx, next) {
+        ctx.status += 1
+        next()
+      },
+      function (ctx) {
+        ctx.status += 1
+      }
+    ])
+    return request
+      .get('/one')
+      .status(204)
+  })
   it('should working with ctx.params if middleware with params were defined', function () {
     router.use(function (ctx) {
       ctx.params.a.should.equal('one')
@@ -133,6 +151,24 @@ describe('router[method]()', function () {
     router.get(function (ctx) {
       ctx.status += 1
     })
+    return request
+      .get('/one')
+      .status(204)
+  })
+  it('should work with an array of middleware', function () {
+    router.get([
+      function (ctx, next) {
+        ctx.status = 202
+        next()
+      },
+      function (ctx, next) {
+        ctx.status += 1
+        next()
+      },
+      function (ctx) {
+        ctx.status += 1
+      }
+    ])
     return request
       .get('/one')
       .status(204)
