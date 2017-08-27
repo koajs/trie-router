@@ -42,11 +42,11 @@ let router = new Router()
 router
   .use(function(ctx, next) {
     console.log('* requests')
-    next()
+    return next()
   })
   .get(function(ctx, next) {
     console.log('GET requests')
-    next()
+    return next()
   })
   .put('/foo', function (ctx) {
     ctx.body = 'PUT /foo requests'
@@ -125,7 +125,7 @@ app.use(function(ctx, next) {
     ctx.status = 501
     return
   }
-  next()
+  return next()
 })
 ```
 

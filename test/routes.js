@@ -25,7 +25,7 @@ function clean(done) {
 
 
 function next(ctx, next) {
-  next()
+  return next()
 }
 
 
@@ -70,11 +70,11 @@ describe('router.use()', function () {
   it('should work with multiple middleware', function () {
     router.use(function (ctx, next) {
       ctx.status = 202
-      next()
+      return next()
     })
     router.use(function (ctx, next) {
       ctx.status += 1
-      next()
+      return next()
     })
     router.use(function (ctx) {
       ctx.status += 1
@@ -87,11 +87,11 @@ describe('router.use()', function () {
     router.use([
       function (ctx, next) {
         ctx.status = 202
-        next()
+        return next()
       },
       function (ctx, next) {
         ctx.status += 1
-        next()
+        return next()
       },
       function (ctx) {
         ctx.status += 1
@@ -142,11 +142,11 @@ describe('router[method]()', function () {
   it('should work with multiple middleware', function () {
     router.get(function (ctx, next) {
       ctx.status = 202
-      next()
+      return next()
     })
     router.get(function (ctx, next) {
       ctx.status += 1
-      next()
+      return next()
     })
     router.get(function (ctx) {
       ctx.status += 1
@@ -159,11 +159,11 @@ describe('router[method]()', function () {
     router.get([
       function (ctx, next) {
         ctx.status = 202
-        next()
+        return next()
       },
       function (ctx, next) {
         ctx.status += 1
-        next()
+        return next()
       },
       function (ctx) {
         ctx.status += 1
@@ -246,11 +246,11 @@ describe('router[method](path, [fn...])', function () {
     it('should work', function () {
       router.get('/three', function (ctx, next) {
         ctx.status = 202
-        next()
+        return next()
       })
       router.get('/three', function (ctx, next) {
         ctx.status += 1
-        next()
+        return next()
       })
       router.get('/three', function (ctx) {
         ctx.status += 1
@@ -298,12 +298,12 @@ describe('router methods', function () {
     router.get(function (ctx, next) {
       ctx.state.x.should.be.equal(1)
       ctx.state.x += 1;
-      next()
+      return next()
     })
     router.use(function (ctx, next) {
       assert(ctx.state.x === undefined)
       ctx.state.x = 1
-      next()
+      return next()
     })
     return request
       .get('/three')
