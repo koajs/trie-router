@@ -30,6 +30,10 @@ See [routington](https://github.com/jonathanong/routington) for more details.
 + `405 Method Not Allowed` support
 + `501 Not Implemented` support
 
+## Notes
+
+The router handles `/foo` and `/foo/` as the different urls (see why [one](https://github.com/koajs/trie-router/issues/13), [two](https://github.com/pillarjs/routington/issues/13)). If you need the same behavior for these urls just add [koa-no-trailing-slash](https://github.com/tssm/koa-no-trailing-slash) on the top of your middleware queue.
+
 ## Usage
 
 ```js
