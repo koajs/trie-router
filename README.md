@@ -129,16 +129,14 @@ app.use(function(ctx, next) {
 })
 ```
 
-
-### ctx.params
-
-`ctx.params` will be defined with any matched parameters.
+### ctx.request.params
+`ctx.request.params` will be [defined](https://github.com/koajs/trie-router/blob/2.1.6/lib/Router.js#L176) with any matched parameters.
 
 ```js
 router.get('/user/:name', async function (ctx, next) {
-  let name = ctx.params.name
+  let name = ctx.request.params.name // or ctx.params.name
   let user = await User.get(name)
-  next()
+  return next()
 })
 ```
 
