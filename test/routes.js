@@ -173,6 +173,20 @@ describe('router[method]()', function () {
       .get('/one')
       .status(204)
   })
+
+  it('calls OPTIONS middleware', function () {
+    let expectedOrigin = 'https://example.com'
+
+    router.options(function (ctx) {
+      ctx.status = 200
+      ctx.set('Access-Control-Allow-Origin', expectedOrigin)
+    })
+
+    return request.options('/')
+      .status(200)
+      .header('Access-Control-Allow-Origin', expectedOrigin)
+  })
+
 })
 
 
@@ -282,6 +296,19 @@ describe('router[method](path, [fn...])', function () {
         .get('/stack/three')
         .status(204)
     })
+  })
+
+  it('calls OPTIONS middleware', function () {
+    let expectedOrigin = 'https://example.com'
+
+    router.options('/', function (ctx) {
+      ctx.status = 200
+      ctx.set('Access-Control-Allow-Origin', expectedOrigin)
+    })
+
+    return request.options('/')
+      .status(200)
+      .header('Access-Control-Allow-Origin', expectedOrigin)
   })
 })
 
@@ -401,5 +428,3 @@ describe('regressions', function () {
     })
   })
 })
-
-
